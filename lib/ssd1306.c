@@ -1,7 +1,8 @@
 #include "ssd1306.h"
 #include "font.h"
 
-void ssd1306_init(ssd1306_t *ssd, uint8_t width, uint8_t height, bool external_vcc, uint8_t address, i2c_inst_t *i2c) {
+void ssd1306_init(ssd1306_t *ssd, uint8_t width, uint8_t height, bool external_vcc, uint8_t address, i2c_inst_t *i2c)
+{
   ssd->width = width;
   ssd->height = height;
   ssd->pages = height / 8U;
@@ -13,7 +14,8 @@ void ssd1306_init(ssd1306_t *ssd, uint8_t width, uint8_t height, bool external_v
   ssd->port_buffer[0] = 0x80;
 }
 
-void ssd1306_config(ssd1306_t *ssd) {
+void ssd1306_config(ssd1306_t *ssd)
+{
   ssd1306_command(ssd, SET_DISP | 0x00);
   ssd1306_command(ssd, SET_MEM_ADDR);
   ssd1306_command(ssd, 0x01);
@@ -41,18 +43,19 @@ void ssd1306_config(ssd1306_t *ssd) {
   ssd1306_command(ssd, SET_DISP | 0x01);
 }
 
-void ssd1306_command(ssd1306_t *ssd, uint8_t command) {
+void ssd1306_command(ssd1306_t *ssd, uint8_t command)
+{
   ssd->port_buffer[1] = command;
   i2c_write_blocking(
-    ssd->i2c_port,
-    ssd->address,
-    ssd->port_buffer,
-    2,
-    false
-  );
+      ssd->i2c_port,
+      ssd->address,
+      ssd->port_buffer,
+      2,
+      false);
 }
 
-void ssd1306_send_data(ssd1306_t *ssd) {
+void ssd1306_send_data(ssd1306_t *ssd)
+{
   ssd1306_command(ssd, SET_COL_ADDR);
   ssd1306_command(ssd, 0);
   ssd1306_command(ssd, ssd->width - 1);
@@ -60,15 +63,15 @@ void ssd1306_send_data(ssd1306_t *ssd) {
   ssd1306_command(ssd, 0);
   ssd1306_command(ssd, ssd->pages - 1);
   i2c_write_blocking(
-    ssd->i2c_port,
-    ssd->address,
-    ssd->ram_buffer,
-    ssd->bufsize,
-    false
-  );
+      ssd->i2c_port,
+      ssd->address,
+      ssd->ram_buffer,
+      ssd->bufsize,
+      false);
 }
 
-void ssd1306_pixel(ssd1306_t *ssd, uint8_t x, uint8_t y, bool value) {
+void ssd1306_pixel(ssd1306_t *ssd, uint8_t x, uint8_t y, bool value)
+{
   uint16_t index = (y >> 3) + (x << 3) + 1;
   uint8_t pixel = (y & 0b111);
   if (value)
@@ -84,71 +87,84 @@ void ssd1306_fill(ssd1306_t *ssd, bool value) {
     ssd->ram_buffer[i] = byte;
 }*/
 
-void ssd1306_fill(ssd1306_t *ssd, bool value) {
-    // Itera por todas as posições do display
-    for (uint8_t y = 0; y < ssd->height; ++y) {
-        for (uint8_t x = 0; x < ssd->width; ++x) {
-            ssd1306_pixel(ssd, x, y, value);
-        }
+void ssd1306_fill(ssd1306_t *ssd, bool value)
+{
+  // Itera por todas as posições do display
+  for (uint8_t y = 0; y < ssd->height; ++y)
+  {
+    for (uint8_t x = 0; x < ssd->width; ++x)
+    {
+      ssd1306_pixel(ssd, x, y, value);
     }
+  }
 }
 
-
-
-void ssd1306_rect(ssd1306_t *ssd, uint8_t top, uint8_t left, uint8_t width, uint8_t height, bool value, bool fill) {
-  for (uint8_t x = left; x < left + width; ++x) {
+void ssd1306_rect(ssd1306_t *ssd, uint8_t top, uint8_t left, uint8_t width, uint8_t height, bool value, bool fill)
+{
+  for (uint8_t x = left; x < left + width; ++x)
+  {
     ssd1306_pixel(ssd, x, top, value);
     ssd1306_pixel(ssd, x, top + height - 1, value);
   }
-  for (uint8_t y = top; y < top + height; ++y) {
+  for (uint8_t y = top; y < top + height; ++y)
+  {
     ssd1306_pixel(ssd, left, y, value);
     ssd1306_pixel(ssd, left + width - 1, y, value);
   }
 
-  if (fill) {
-    for (uint8_t x = left + 1; x < left + width - 1; ++x) {
-      for (uint8_t y = top + 1; y < top + height - 1; ++y) {
+  if (fill)
+  {
+    for (uint8_t x = left + 1; x < left + width - 1; ++x)
+    {
+      for (uint8_t y = top + 1; y < top + height - 1; ++y)
+      {
         ssd1306_pixel(ssd, x, y, value);
       }
     }
   }
 }
 
-void ssd1306_line(ssd1306_t *ssd, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool value) {
-    int dx = abs(x1 - x0);
-    int dy = abs(y1 - y0);
+void ssd1306_line(ssd1306_t *ssd, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool value)
+{
+  int dx = abs(x1 - x0);
+  int dy = abs(y1 - y0);
 
-    int sx = (x0 < x1) ? 1 : -1;
-    int sy = (y0 < y1) ? 1 : -1;
+  int sx = (x0 < x1) ? 1 : -1;
+  int sy = (y0 < y1) ? 1 : -1;
 
-    int err = dx - dy;
+  int err = dx - dy;
 
-    while (true) {
-        ssd1306_pixel(ssd, x0, y0, value); // Desenha o pixel atual
+  while (true)
+  {
+    ssd1306_pixel(ssd, x0, y0, value); // Desenha o pixel atual
 
-        if (x0 == x1 && y0 == y1) break; // Termina quando alcança o ponto final
+    if (x0 == x1 && y0 == y1)
+      break; // Termina quando alcança o ponto final
 
-        int e2 = err * 2;
+    int e2 = err * 2;
 
-        if (e2 > -dy) {
-            err -= dy;
-            x0 += sx;
-        }
-
-        if (e2 < dx) {
-            err += dx;
-            y0 += sy;
-        }
+    if (e2 > -dy)
+    {
+      err -= dy;
+      x0 += sx;
     }
+
+    if (e2 < dx)
+    {
+      err += dx;
+      y0 += sy;
+    }
+  }
 }
 
-
-void ssd1306_hline(ssd1306_t *ssd, uint8_t x0, uint8_t x1, uint8_t y, bool value) {
+void ssd1306_hline(ssd1306_t *ssd, uint8_t x0, uint8_t x1, uint8_t y, bool value)
+{
   for (uint8_t x = x0; x <= x1; ++x)
     ssd1306_pixel(ssd, x, y, value);
 }
 
-void ssd1306_vline(ssd1306_t *ssd, uint8_t x, uint8_t y0, uint8_t y1, bool value) {
+void ssd1306_vline(ssd1306_t *ssd, uint8_t x, uint8_t y0, uint8_t y1, bool value)
+{
   for (uint8_t y = y0; y <= y1; ++y)
     ssd1306_pixel(ssd, x, y, value);
 }
@@ -157,15 +173,23 @@ void ssd1306_vline(ssd1306_t *ssd, uint8_t x, uint8_t y0, uint8_t y1, bool value
 void ssd1306_draw_char(ssd1306_t *ssd, char c, uint8_t x, uint8_t y)
 {
   uint16_t index = 0;
-  char ver=c;
+  char ver = c;
   if (c >= 'A' && c <= 'Z')
   {
     index = (c - 'A' + 11) * 8; // Para letras maiúsculas
-  }else  if (c >= '0' && c <= '9')
+  }
+  else if (c >= '0' && c <= '9')
   {
     index = (c - '0' + 1) * 8; // Adiciona o deslocamento necessário
   }
-  
+  else if (c >= 'a' && c <= 'z')
+  {
+    index = (c - 'a' + 37) * 8;
+  }
+  else if (c >= '!' && c <= '@')
+  {
+    index = (c - '>' + 67 + 25) * 8; // Posição do símbolo '>' na fonte
+  }
   for (uint8_t i = 0; i < 8; ++i)
   {
     uint8_t line = font[index + i];
@@ -189,6 +213,60 @@ void ssd1306_draw_string(ssd1306_t *ssd, const char *str, uint8_t x, uint8_t y)
       y += 8;
     }
     if (y + 8 >= ssd->height)
+    {
+      break;
+    }
+  }
+}
+
+void ssd1306_draw_char_large(ssd1306_t *ssd, char c, uint8_t x, uint8_t y)
+{
+  uint16_t index = 0;
+  char ver = c;
+  if (c >= 'A' && c <= 'Z')
+  {
+    index = (c - 'A' + 11) * 8; // Para letras maiúsculas
+  }
+  else if (c >= '0' && c <= '9')
+  {
+    index = (c - '0' + 1) * 8; // Adiciona o deslocamento necessário
+  }
+  else if (c >= 'a' && c <= 'z')
+  {
+    index = (c - 'a' + 37) * 8;
+  }
+  else if (c == '>')
+  {
+    index = c - '>' + 62 * 7; // Posição do símbolo '>' na fonte
+  }
+
+  for (uint8_t i = 0; i < 8; ++i)
+  {
+    uint8_t line = font[index + i];
+    for (uint8_t j = 0; j < 8; ++j)
+    {
+      bool pixel_on = line & (1 << j);
+      // Expande cada pixel para um bloco 2x2
+      ssd1306_pixel(ssd, x + (i * 2), y + (j * 2), pixel_on);
+      ssd1306_pixel(ssd, x + (i * 2) + 1, y + (j * 2), pixel_on);
+      ssd1306_pixel(ssd, x + (i * 2), y + (j * 2) + 1, pixel_on);
+      ssd1306_pixel(ssd, x + (i * 2) + 1, y + (j * 2) + 1, pixel_on);
+    }
+  }
+}
+
+void ssd1306_draw_string_large(ssd1306_t *ssd, const char *str, uint8_t x, uint8_t y)
+{
+  while (*str)
+  {
+    ssd1306_draw_char_large(ssd, *str++, x, y);
+    x += 16; // Ajuste para caracteres ampliados (antes era 8)
+    if (x + 16 >= ssd->width)
+    {
+      x = 0;
+      y += 16;
+    }
+    if (y + 16 >= ssd->height)
     {
       break;
     }
