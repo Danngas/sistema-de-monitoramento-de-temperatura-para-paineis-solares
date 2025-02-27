@@ -157,12 +157,12 @@ typedef struct
     float temp_urgent_max;    // Limite superior para urgente
     AlertType current_alert;  // Estado atual do alerta
 } AlertConfig;
-
+    
 // Inicialização da configuração de alertas
 AlertConfig alert_config = {
-    .temp_normal_max = 45.0f,    // Operação normal até 45°C
+    .temp_normal_max = 55.0f,    // Operação normal até 45°C
     .temp_attention_max = 65.0f, // Atenção até 65°C
-    .temp_urgent_max = 65.0f,    // Urgente acima de 65°C
+    .temp_urgent_max = 80.0f,    // Urgente acima de 65°C
     .current_alert = ALERT_NORMAL};
 
 // Definições dos pinos do LED RGB
@@ -566,11 +566,11 @@ void draw_config_screen(ssd1306_t *ssd)
     // Instruções
     if (editing)
     {
-        ssd1306_draw_string(ssd, "A:+/B:-", 90, 55);
+        //ssd1306_draw_string(ssd, "A:+/B:-", 90, 55);
     }
     else
     {
-        ssd1306_draw_string(ssd, "A:Sel/B:Edit", 70, 55);
+       // ssd1306_draw_string(ssd, "A:Sel/B:Edit", 70, 55);
     }
 }
 
