@@ -1,4 +1,7 @@
 # Sistema de Monitoramento de Temperatura para Painéis Solares
+Daniel Silva de souza
+
+link do Video: https://youtu.be/9FZJZ7f-6wM?si=kijlpPfXn_Z4Mnjq
 
 Um sistema embarcado baseado no Raspberry Pi Pico para monitoramento em tempo real de temperatura em painéis solares, com interface gráfica em display OLED e sistema de alertas visuais.
 
